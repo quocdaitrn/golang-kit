@@ -1,17 +1,20 @@
 package validator
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/universal-translator"
 	stdvalidator "github.com/go-playground/validator/v10"
 	entrans "github.com/go-playground/validator/v10/translations/en"
+
+	kiterrors "github.com/quocdaitrn/golang-kit/errors"
 )
 
 // Validator provides available methods to validate struct.
 type Validator interface {
-	Validate(i interface{}) map[string]string
+	Validate(i interface{}) error
 }
 
 // validator represents a validator for request data.
@@ -23,6 +26,19 @@ type validator struct {
 // New creates and returns a new instance of Validator.
 func New() (Validator, error) {
 	v := stdvalidator.New()
+	// Get name for validator by priorities: header > param > query > json > form.
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("field"), ",", 2)[0]
+		if name != "" && name != "-" {
+			return name
+		}
+
+		if name == "-" {
+			return ""
+		}
+
+		return name
+	})
 	enLocale := en.New()
 	uni := ut.New(enLocale, enLocale)
 
@@ -36,7 +52,7 @@ func New() (Validator, error) {
 }
 
 // Validate validate input struct.
-func (v *validator) Validate(i interface{}) map[string]string {
+func (v *validator) Validate(i interface{}) error {
 	err := v.Validator.Struct(i)
 	if err != nil {
 		details := map[string]string{}
@@ -51,7 +67,7 @@ func (v *validator) Validate(i interface{}) map[string]string {
 			}
 		}
 
-		return details
+		return kiterrors.WithStack(kiterrors.ErrInvalidRequest.WithDetails(details))
 	}
 
 	return nil
