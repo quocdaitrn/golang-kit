@@ -11,6 +11,7 @@ const (
 
 // Headers
 const (
-	HeaderContentType = "Content-Type"
-	HeaderAccept      = "Accept"
+	HeaderContentType   = "Content-Type"
+	HeaderAccept        = "Accept"
+	HeaderAuthorization = "Authorization"
 )
