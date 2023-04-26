@@ -2,11 +2,9 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
 	"strings"
 
-	"github.com/gorilla/mux"
+	"github.com/go-kit/kit/endpoint"
 
 	kitcontext "github.com/quocdaitrn/golang-kit/context"
 	kiterrors "github.com/quocdaitrn/golang-kit/errors"
@@ -16,37 +14,26 @@ type AuthenticateClient interface {
 	IntrospectToken(ctx context.Context, accessToken string) (sub string, tid string, err error)
 }
 
-func RequireAuth(ac AuthenticateClient) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token, err := extractTokenFromHeaderString(r.Header.Get("Authorization"))
+func Authenticate(ac AuthenticateClient) endpoint.Middleware {
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, request interface{}) (interface{}, error) {
+			token, err := extractTokenFromHeaderString(ctx.Value("Authorization").(string))
 			if err != nil {
-				unauthorizedErr, _ := json.Marshal(&errorUnauthorized{
-					ErrorCode:    401001,
-					ErrorMessage: err.Error(),
-				})
-				http.Error(w, string(unauthorizedErr), http.StatusUnauthorized)
-				return
+				return nil, kiterrors.ErrUnauthorized.WithDetails(err)
 			}
 
-			sub, tid, err := ac.IntrospectToken(r.Context(), token)
+			sub, tid, err := ac.IntrospectToken(ctx, token)
 			if err != nil {
-				unauthorizedErr, _ := json.Marshal(&errorUnauthorized{
-					ErrorCode:    401000,
-					ErrorMessage: "unauthorized",
-				})
-				http.Error(w, string(unauthorizedErr), http.StatusUnauthorized)
-				return
+				return nil, kiterrors.ErrUnauthorized.WithDetails(err)
 			}
 
 			uid := kitcontext.UID{
 				Sub: sub,
 				Tid: tid,
 			}
-			ctx := kitcontext.WithUID(r.Context(), uid)
-
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
+			ctx = kitcontext.WithUID(ctx, uid)
+			return next(ctx, request)
+		}
 	}
 }
 

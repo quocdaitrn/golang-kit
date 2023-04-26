@@ -3,6 +3,7 @@ module github.com/quocdaitrn/golang-kit
 go 1.20
 
 require (
+	github.com/go-kit/kit v0.12.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.12.0
@@ -16,7 +17,7 @@ require (
 
 require (
 	github.com/leodido/go-urn v1.2.2 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
