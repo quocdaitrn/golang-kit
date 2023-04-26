@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/quocdaitrn/golang-kit/constant"
 	"strings"
 
 	"github.com/go-kit/kit/endpoint"
@@ -17,11 +18,7 @@ type AuthenticateClient interface {
 func Authenticate(ac AuthenticateClient) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (interface{}, error) {
-			accessToken, ok := ctx.Value("Authorization").(string)
-			if !ok {
-				return nil, kiterrors.ErrUnauthorized.WithDetails("messing access token")
-			}
-			token, err := extractTokenFromHeaderString(accessToken)
+			token, err := extractTokenFromHeaderString(constant.ContextAuthorization.Get(ctx))
 			if err != nil {
 				return nil, kiterrors.ErrUnauthorized.WithDetails(err)
 			}
