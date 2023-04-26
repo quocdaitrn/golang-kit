@@ -5,8 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/quocdaitrn/golang-kit/errors"
 )
 
 type Hasher struct{}

@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/pkg/errors"
+
+	"github.com/quocdaitrn/golang-kit/errors"
 )
 
 type JWTProvider interface {
